@@ -5,7 +5,7 @@
 1. Get yourself some ARM64 hardware (Mac M1) or a VM (Oracle Cloud has free ARM64 VMs)
 2. Install some basic packages: make, curl, git, jq
 3. Install Go version 1.17+. Follow instructions [here](https://go.dev/doc/install).
-    If building on a Raspberry PI, the version of `golang` included with RaspiOS package manager does not work. 
+   If building on a Raspberry PI, the version of `golang` included with RaspiOS package manager does not work.
 4. This is used later to package buildpacks: `go install github.com/paketo-buildpacks/libpak/cmd/create-package@v1.60.1`.
 5. Install `yj` which is used by some of the helper scripts. run `go install github.com/sclevine/yj/v5@v5.1.0`.
 6. Add `~/go/bin` to `$PATH`.  Run `export $PATH=$PATH:$HOME/go/bin`.
@@ -123,32 +123,177 @@ Here is a breakdown of the scripts that you can use to mostly automate this proc
 
 1. [clone.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/scripts/clone.sh) can be used to quickly clone all of the buildpack repositories. It requires the buildpack id and version of a composite buildpack (buildpack that references other buildpacks). It will then go and clone all of the component (referenced buildpacks) and check out the version of those buildpacks set in the composite buildpack.
 
-    For example: `./clone.sh paketo-buildpacks/java 6.4.0`. Will clone all of the referenced component buildpacks & the composite buildpack to the working directory (`./buildpacks`).
+   For example: `./clone.sh paketo-buildpacks/java 6.4.0`. Will clone all of the referenced component buildpacks & the composite buildpack to the working directory (`./buildpacks`).
 
 2. [mod-bptoml.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/scripts/mod-bptoml.sh) can be used to quickly change the buildpack id of all the buildpacks. It will go through and append `-arm64` to the end of each buildpack id. This is useful so that there is something to differentiate between the images you're creating and standard x86 images.
 
-    For example: `find ./buildpacks  -name "buildpack.toml" | xargs -n 1 ./mod-bptoml.sh`. This will find all of the buildpack.toml files in the working directory and update them.
+   For example: `find ./buildpacks  -name "buildpack.toml" | xargs -n 1 ./mod-bptoml.sh`. This will find all of the buildpack.toml files in the working directory and update them.
 
 3. [mod-pkgtoml.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/scripts/mod-pkgtoml.sh) can be used to quickly change the image name of all the buildpacks. It will go through and append `-arm64` to the end of each image name. This is useful so that there is something to differentiate between the images you're creating and standard x86 images.
 
-    For example: `find ./buildpacks  -name "buildpack.toml" | xargs -n 1 ./mod-bptoml.sh`. This will find all of the buildpack.toml files in the working directory and update them.
+   For example: `find ./buildpacks  -name "buildpack.toml" | xargs -n 1 ./mod-bptoml.sh`. This will find all of the buildpack.toml files in the working directory and update them.
 
 4. [build.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/scripts/build.sh) can be used to iterate over all of the buildpacks in the working directory (created by `clone.sh`).
 
-    For example: `./build.sh paketo-buildpacks/java`.
+   For example: `./build.sh paketo-buildpacks/java`.
 
 5. [reset.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/scripts/reset.sh) can be used to reset the temporary directory to a given working state. You pass it the composite buildpack id and version. It will reset, pull and check out that version. Then recursively do the same for all referenced buildpacks.
 
-    For example: `./reset.sh paketo-buildpacks/java 6.4.0`. This will reset the working directory to the 6.4.0 version. If this fails, like if new buildpacks have been introduced, then you should run `clone.sh` instead. Running `clone.sh` is similar but wipes and results in a fresh working directory.
+   For example: `./reset.sh paketo-buildpacks/java 6.4.0`. This will reset the working directory to the 6.4.0 version. If this fails, like if new buildpacks have been introduced, then you should run `clone.sh` instead. Running `clone.sh` is similar but wipes and results in a fresh working directory.
 
 6. [create-builder.sh](https://github.com/dmikusa-pivotal/paketo-arm64/blob/main/create-builder.sh) can be used to generate a `builder.toml` and create a builder image. This works by generating a builder.toml based on the information passed into it and what's in the referenced composite buildpack's `buildpack.toml` file. This requires a lot of input so see [this section](#create-a-builder) for details on running it.
 
 ## Updating to new versions - manual process
-
-
 
 1. For each file in `arm64-toml`
    1. Pull the latest version of the buildpack.toml
    2. Do a diff and update the dependencies and the SHA values for ARM64/aarch64 versions
 
 2. Update `.github/workflows/paketo-arm64` versions for builder and lifecycle
+
+## pack build inspect
+
+```text
+
+Description: An ARM64 builder based on paketo-buildpacks/java
+
+Created By:
+  Name: Pack CLI
+  Version: 0.27.0+git-f4f5be1.build-3382
+
+Trusted: No
+
+Stack:
+  ID: io.dashaun.stack.focal.arm64
+
+Lifecycle:
+  Version: 0.15.0
+  Buildpack APIs:
+    Deprecated: (none)
+    Supported: 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
+  Platform APIs:
+    Deprecated: (none)
+    Supported: 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10
+
+Run Images:
+  dashaun/stack-run:focal
+
+Buildpacks:
+  ID                                                        NAME                                                   VERSION        HOMEPAGE
+  paketo-buildpacks/apache-tomcat-arm64                     Paketo Buildpack for Apache Tomcat                     7.8.0          https://github.com/paketo-buildpacks/apache-tomcat
+  paketo-buildpacks/apache-tomee-arm64                      Paketo Buildpack for Apache Tomee                      1.3.0          https://github.com/paketo-buildpacks/apache-tomee
+  paketo-buildpacks/azure-application-insights-arm64        Paketo Buildpack for Azure Application Insights        5.9.0          https://github.com/paketo-buildpacks/azure-application-insights
+  paketo-buildpacks/bellsoft-liberica-arm64                 Paketo Buildpack for BellSoft Liberica                 9.10.0         https://github.com/paketo-buildpacks/bellsoft-liberica
+  paketo-buildpacks/ca-certificates-arm64                   Paketo Buildpack for CA Certificates                   3.4.0          https://github.com/paketo-buildpacks/ca-certificates
+  paketo-buildpacks/clojure-tools-arm64                     Paketo Buildpack for Clojure Tools                     2.5.0          https://github.com/paketo-buildpacks/clojure-tools
+  paketo-buildpacks/datadog-arm64                           Paketo Buildpack for Datadog                           2.5.0          https://github.com/paketo-buildpacks/datadog
+  paketo-buildpacks/dist-zip-arm64                          Paketo Buildpack for DistZip                           5.4.0          https://github.com/paketo-buildpacks/dist-zip
+  paketo-buildpacks/encrypt-at-rest-arm64                   Paketo Encrypt-at-Rest Buildpack                       4.2.1          https://github.com/paketo-buildpacks/encrypt-at-rest
+  paketo-buildpacks/environment-variables-arm64             Paketo Buildpack for Environment Variables             4.3.0          https://github.com/paketo-buildpacks/environment-variables
+  paketo-buildpacks/executable-jar-arm64                    Paketo Buildpack for Executable JAR                    6.5.0          https://github.com/paketo-buildpacks/executable-jar
+  paketo-buildpacks/google-stackdriver-arm64                Paketo Buildpack for Google Stackdriver                6.7.0          https://github.com/paketo-buildpacks/google-stackdriver
+  paketo-buildpacks/gradle-arm64                            Paketo Buildpack for Gradle                            6.8.0          https://github.com/paketo-buildpacks/gradle
+  paketo-buildpacks/image-labels-arm64                      Paketo Buildpack for Image Labels                      4.3.0          https://github.com/paketo-buildpacks/image-labels
+  paketo-buildpacks/jattach-arm64                           Paketo Buildpack for JAttach                           1.2.0          https://github.com/paketo-buildpacks/jattach
+  paketo-buildpacks/java-memory-assistant-arm64             Paketo Java Memory Assistant Buildpack                 1.1.0          https://github.com/paketo-buildpacks/java-memory-assistant
+  paketo-buildpacks/leiningen-arm64                         Paketo Buildpack for Leiningen                         4.4.0          https://github.com/paketo-buildpacks/leiningen
+  paketo-buildpacks/liberty-arm64                           Paketo Buildpack for Liberty                           2.4.0          https://github.com/paketo-buildpacks/liberty
+  paketo-buildpacks/maven-arm64                             Paketo Buildpack for Maven                             6.11.0         https://github.com/paketo-buildpacks/maven
+  paketo-buildpacks/procfile-arm64                          Paketo Buildpack for Procfile                          5.4.0          https://github.com/paketo-buildpacks/procfile
+  paketo-buildpacks/sbt-arm64                               Paketo Buildpack for SBT                               6.8.0          https://github.com/paketo-buildpacks/sbt
+  paketo-buildpacks/spring-boot-arm64                       Paketo Buildpack for Spring Boot                       5.20.0         https://github.com/paketo-buildpacks/spring-boot
+  paketo-buildpacks/syft-arm64                              Paketo Buildpack for Syft                              1.22.0         https://github.com/paketo-buildpacks/syft
+  paketo-buildpacks/watchexec-arm64                         Paketo Buildpack for Watchexec                         2.7.0          https://github.com/paketo-buildpacks/watchexec
+
+Detection Order:
+ └ Group #1:
+    ├ paketo-buildpacks/ca-certificates-arm64@3.4.0               (optional)
+    ├ paketo-buildpacks/bellsoft-liberica-arm64@9.10.0
+    ├ paketo-buildpacks/syft-arm64@1.22.0                         (optional)
+    ├ paketo-buildpacks/leiningen-arm64@4.4.0                     (optional)
+    ├ paketo-buildpacks/clojure-tools-arm64@2.5.0                 (optional)
+    ├ paketo-buildpacks/gradle-arm64@6.8.0                        (optional)
+    ├ paketo-buildpacks/maven-arm64@6.11.0                        (optional)
+    ├ paketo-buildpacks/sbt-arm64@6.8.0                           (optional)
+    ├ paketo-buildpacks/watchexec-arm64@2.7.0                     (optional)
+    ├ paketo-buildpacks/executable-jar-arm64@6.5.0                (optional)
+    ├ paketo-buildpacks/apache-tomcat-arm64@7.8.0                 (optional)
+    ├ paketo-buildpacks/apache-tomee-arm64@1.3.0                  (optional)
+    ├ paketo-buildpacks/liberty-arm64@2.4.0                       (optional)
+    ├ paketo-buildpacks/dist-zip-arm64@5.4.0                      (optional)
+    ├ paketo-buildpacks/spring-boot-arm64@5.20.0                  (optional)
+    ├ paketo-buildpacks/procfile-arm64@5.4.0                      (optional)
+    ├ paketo-buildpacks/jattach-arm64@1.2.0                       (optional)
+    ├ paketo-buildpacks/azure-application-insights-arm64@5.9.0    (optional)
+    ├ paketo-buildpacks/google-stackdriver-arm64@6.7.0            (optional)
+    ├ paketo-buildpacks/datadog-arm64@2.5.0                       (optional)
+    ├ paketo-buildpacks/java-memory-assistant-arm64@1.1.0         (optional)
+    ├ paketo-buildpacks/encrypt-at-rest-arm64@4.2.1               (optional)
+    ├ paketo-buildpacks/environment-variables-arm64@4.3.0         (optional)
+    └ paketo-buildpacks/image-labels-arm64@4.3.0                  (optional)
+```
+
+## pack build inspect `native`
+
+```text
+Inspecting builder: dashaun/java-native-builder-arm64
+
+REMOTE:
+
+Description: An ARM64 builder based on paketo-buildpacks/java-native-image
+
+Created By:
+  Name: Pack CLI
+  Version: 0.27.0+git-f4f5be1.build-3382
+
+Trusted: No
+
+Stack:
+  ID: io.dashaun.stack.focal.arm64
+
+Lifecycle:
+  Version: 0.15.0
+  Buildpack APIs:
+    Deprecated: (none)
+    Supported: 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
+  Platform APIs:
+    Deprecated: (none)
+    Supported: 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10
+
+Run Images:
+  dashaun/stack-run:focal
+
+Buildpacks:
+  ID                                                   NAME                                              VERSION        HOMEPAGE
+  paketo-buildpacks/bellsoft-liberica-arm64            Paketo Buildpack for BellSoft Liberica            9.10.0         https://github.com/paketo-buildpacks/bellsoft-liberica
+  paketo-buildpacks/ca-certificates-arm64              Paketo Buildpack for CA Certificates              3.4.0          https://github.com/paketo-buildpacks/ca-certificates
+  paketo-buildpacks/environment-variables-arm64        Paketo Buildpack for Environment Variables        4.3.0          https://github.com/paketo-buildpacks/environment-variables
+  paketo-buildpacks/executable-jar-arm64               Paketo Buildpack for Executable JAR               6.5.0          https://github.com/paketo-buildpacks/executable-jar
+  paketo-buildpacks/gradle-arm64                       Paketo Buildpack for Gradle                       6.8.0          https://github.com/paketo-buildpacks/gradle
+  paketo-buildpacks/image-labels-arm64                 Paketo Buildpack for Image Labels                 4.3.0          https://github.com/paketo-buildpacks/image-labels
+  paketo-buildpacks/leiningen-arm64                    Paketo Buildpack for Leiningen                    4.4.0          https://github.com/paketo-buildpacks/leiningen
+  paketo-buildpacks/maven-arm64                        Paketo Buildpack for Maven                        6.11.0         https://github.com/paketo-buildpacks/maven
+  paketo-buildpacks/native-image-arm64                 Paketo Buildpack for Native Image                 5.6.0          https://github.com/paketo-buildpacks/native-image
+  paketo-buildpacks/procfile-arm64                     Paketo Buildpack for Procfile                     5.4.0          https://github.com/paketo-buildpacks/procfile
+  paketo-buildpacks/sbt-arm64                          Paketo Buildpack for SBT                          6.8.0          https://github.com/paketo-buildpacks/sbt
+  paketo-buildpacks/spring-boot-arm64                  Paketo Buildpack for Spring Boot                  5.20.0         https://github.com/paketo-buildpacks/spring-boot
+  paketo-buildpacks/syft-arm64                         Paketo Buildpack for Syft                         1.22.0         https://github.com/paketo-buildpacks/syft
+  paketo-buildpacks/upx-arm64                          Paketo Buildpack for UPX                          3.3.0          https://github.com/paketo-buildpacks/upx
+
+Detection Order:
+ └ Group #1:
+    ├ paketo-buildpacks/ca-certificates-arm64@3.4.0          (optional)
+    ├ paketo-buildpacks/upx-arm64@3.3.0                      (optional)
+    ├ paketo-buildpacks/bellsoft-liberica-arm64@9.10.0
+    ├ paketo-buildpacks/syft-arm64@1.22.0                    (optional)
+    ├ paketo-buildpacks/leiningen-arm64@4.4.0                (optional)
+    ├ paketo-buildpacks/gradle-arm64@6.8.0                   (optional)
+    ├ paketo-buildpacks/maven-arm64@6.11.0                   (optional)
+    ├ paketo-buildpacks/sbt-arm64@6.8.0                      (optional)
+    ├ paketo-buildpacks/executable-jar-arm64@6.5.0           (optional)
+    ├ paketo-buildpacks/spring-boot-arm64@5.20.0             (optional)
+    ├ paketo-buildpacks/native-image-arm64@5.6.0
+    ├ paketo-buildpacks/procfile-arm64@5.4.0                 (optional)
+    ├ paketo-buildpacks/environment-variables-arm64@4.3.0    (optional)
+    └ paketo-buildpacks/image-labels-arm64@4.3.0             (optional)
+```
