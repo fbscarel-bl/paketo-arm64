@@ -90,3 +90,5 @@ jobs:
           
           docker manifest create dashaun/java-native-builder-multiarch:7.37.0 --amend dashaun/java-native-builder-arm64:7.37.0 --amend paketobuildpacks/builder:tiny
           docker manifest push dashaun/java-native-builder-multiarch:7.37.0
+          docker manifest create dashaun/java-native-builder-multiarch:latest --amend dashaun/java-native-builder-arm64:7.37.0 --amend paketobuildpacks/builder:tiny
+          docker manifest push dashaun/java-native-builder-multiarch:latest
