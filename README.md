@@ -148,6 +148,7 @@ Here is a breakdown of the scripts that you can use to mostly automate this proc
 1. For each file in `arm64-toml`
    1. Pull the latest version of the buildpack.toml
    2. Do a diff and update the dependencies and the SHA values for ARM64/aarch64 versions
+      1. `shasum -a 256 filename`
 
 2. Update `.github/workflows/paketo-arm64` versions for builder and lifecycle
 
