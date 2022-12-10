@@ -53,7 +53,6 @@ build_local_buildpacks() {
   	pushd "$WORK/$BUILDPACK" >/dev/null
   		create-package --destination ./out --version "$VERSION"
   		pushd ./out >/dev/null
-  			#--preserve-env=PATH pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
   			pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
   		popd
   	popd
@@ -61,16 +60,16 @@ build_local_buildpacks() {
 }
 
 update_metadata_dependencies() {
-  jq -c '.metadata.dependencies[]' "$1" | while read -r i; do
+    printf "%s" "$1" | jq -c '.metadata.dependencies[]' | while read -r i; do
       #printf %s\n $i
       #grab the sha256
       SHA256_REPLACE=$(printf %s "$i" | jq -r .sha256)
-      #printf "SHA256_REPLACE %s\n" "$SHA256_REPLACE"
+      printf "SHA256_REPLACE %s\n" "$SHA256_REPLACE"
       URI_RESOURCE=$(printf %s "$i" | jq -r .uri)
-      #printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
+      printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
       wget -q "$URI_RESOURCE" --output-document=$WORK/downloaded.tgz >/dev/null 2>&1 &&
       SHA256_NEW=$(shasum -a 256 $WORK/downloaded.tgz | cut -d ' ' -f 1)
-      #printf "SHA256_NEW %s\n" "$SHA256_NEW"
+      printf "SHA256_NEW %s\n" "$SHA256_NEW"
       sed -i.bak -e "s/$SHA256_REPLACE/$SHA256_NEW/" -- "${TARGET}" && rm -- "${TARGET}.bak"
     done
 }
@@ -78,23 +77,27 @@ update_metadata_dependencies() {
 java_work(){
   # Bellsoft Liberica
   TARGET=$WORK/paketo-buildpacks/bellsoft-liberica/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/-amd64.tar.gz/-aarch64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  yj -t < "${TARGET}" > update_metadata_dependencies
+  update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   # Syft
   TARGET=$WORK/paketo-buildpacks/syft/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/amd64.tar.gz/arm64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  yj -t < "${TARGET}" > update_metadata_dependencies
+  update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Watchexec
   TARGET=$WORK/paketo-buildpacks/watchexec/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/x86_64-unknown/aarch64-unknown/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  yj -t < "${TARGET}" > update_metadata_dependencies
+  update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Java Buildpack
   TARGET=$WORK/$BPID/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   build_local_buildpacks $BPID
@@ -108,7 +111,14 @@ java_work(){
 java_native_image_work(){
   #Java Native Image Buildpack
   TARGET=$WORK/$BPID/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
+
+  #UPX
+  TARGET=$WORK/paketo-buildpacks/upx/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
+  sed -i.bak -e 's/amd64/arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   build_local_buildpacks $BPID
   cd $WORK/$BPID
@@ -142,6 +152,6 @@ docker push dashaun/builder-arm:tiny
 docker push dashaun/stack-build:tiny
 docker push dashaun/stack-run:tiny
 docker push dashaun/builder-arm:tiny
-
+#
 docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder:tiny
