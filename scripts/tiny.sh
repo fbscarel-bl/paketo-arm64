@@ -138,9 +138,10 @@ cd $WORK
 pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
 cd ..
 
-docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
+docker push dashaun/builder-arm:tiny
+docker push dashaun/stack-build:tiny
+docker push dashaun/stack-run:tiny
+docker push dashaun/builder-arm:tiny
 
-#docker manifest push dashaun/builder:tiny
-#docker push dashaun/builder-arm:tiny
-#docker push dashaun/stack-build:tiny
-#docker push dashaun/stack-run:tiny
+docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder:tiny
