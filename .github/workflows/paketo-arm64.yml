@@ -24,17 +24,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}  
-
-      - name: Run Image
-        run: |
-          docker build ./stack -t dashaun/stack-run:focal --target run --build-arg STACK_ID="io.dashaun.stack.focal.arm64"
-          docker push dashaun/stack-run:focal
-
-      - name: Build Image
-        run: |
-          docker build ./stack -t dashaun/stack-build:focal --target build --build-arg STACK_ID="io.dashaun.stack.focal.arm64"
-          docker push dashaun/stack-build:focal
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: install deps
         run: |
@@ -45,50 +35,14 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: 'buildpacks/pack'
-          version: 'tags/v0.27.0'
-          file: 'pack-v0.27.0-linux-arm64.tgz'
+          version: 'tags/v0.28.0'
+          file: 'pack-v0.28.0-linux-arm64.tgz'
     
       - name: Install pack
         run: |
-          tar -xvzf pack-v0.27.0-linux-arm64.tgz
+          tar -xvzf pack-v0.28.0-linux-arm64.tgz
           sudo install pack /usr/local/bin
 
-      - name: java-buildpack
+      - name: tiny-builder
         run: |
-          ./scripts/clone.sh paketo-buildpacks/java 8.0.0
-          sed -i "s/paketo-buildpacks\/java\"/dashaun\/java-builder\"/g" ./buildpacks/paketo-buildpacks/java/buildpack.toml
-          find ./buildpacks -name "buildpack.toml" | xargs -n 1 ./scripts/mod-bptoml.sh
-          find ./buildpacks -name "package.toml" | xargs -n 1 ./scripts/mod-pkgtoml.sh
-          cp ./arm64-toml/bellsoft.toml buildpacks/paketo-buildpacks/bellsoft-liberica/buildpack.toml
-          cp ./arm64-toml/syft.toml buildpacks/paketo-buildpacks/syft/buildpack.toml
-          cp ./arm64-toml/watchexec.toml buildpacks/paketo-buildpacks/watchexec/buildpack.toml
-          ./scripts/build.sh paketo-buildpacks/java
-          ./scripts/create-builder.sh paketo-buildpacks/java 8.0.0 0.15.2 dashaun/stack-run:focal dashaun/stack-build:focal io.dashaun.stack.focal.arm64 dashaun/builder:focal
-          docker tag dashaun/builder:focal docker.io/dashaun/java-builder-arm64:8.0.0
-          docker tag dashaun/builder:focal docker.io/dashaun/java-builder-arm64:latest
-          docker push docker.io/dashaun/java-builder-arm64:8.0.0
-          docker push docker.io/dashaun/java-builder-arm64:latest
-
-      - name: java-native-image-buildpack
-        run: |
-          ./scripts/clone.sh paketo-buildpacks/java-native-image 7.41.0
-          sed -i "s/paketo-buildpacks\/java-native-image/dashaun\/java-native-image/g" ./buildpacks/paketo-buildpacks/java-native-image/buildpack.toml
-          find ./buildpacks -name "buildpack.toml" | xargs -n 1 ./scripts/mod-bptoml.sh
-          find ./buildpacks -name "package.toml" | xargs -n 1 ./scripts/mod-pkgtoml.sh
-          cp ./arm64-toml/bellsoft.toml buildpacks/paketo-buildpacks/bellsoft-liberica/buildpack.toml
-          cp ./arm64-toml/syft.toml buildpacks/paketo-buildpacks/syft/buildpack.toml
-          ./scripts/build.sh paketo-buildpacks/java-native-image
-          ./scripts/create-builder.sh paketo-buildpacks/java-native-image 7.41.0 0.15.2 dashaun/stack-run:focal dashaun/stack-build:focal io.dashaun.stack.focal.arm64 dashaun/native-builder:focal
-          docker tag dashaun/native-builder:focal docker.io/dashaun/java-native-builder-arm64:7.41.0
-          docker tag dashaun/native-builder:focal docker.io/dashaun/native-builder:focal-arm64
-          docker tag dashaun/native-builder:focal docker.io/dashaun/native-builder:latest
-          docker tag dashaun/native-builder:focal docker.io/dashaun/java-native-builder-arm64:latest
-          docker push docker.io/dashaun/java-native-builder-arm64:7.41.0
-          docker push docker.io/dashaun/java-native-builder-arm64:latest
-          docker push docker.io/dashaun/native-builder:focal-arm64
-          docker push docker.io/dashaun/native-builder:latest
-          
-          docker manifest create dashaun/java-native-builder-multiarch:7.41.0 --amend dashaun/java-native-builder-arm64:7.41.0 --amend paketobuildpacks/builder:tiny
-          docker manifest push dashaun/java-native-builder-multiarch:7.41.0
-          docker manifest create dashaun/java-native-builder-multiarch:latest --amend dashaun/java-native-builder-arm64:7.41.0 --amend paketobuildpacks/builder:tiny
-          docker manifest push dashaun/java-native-builder-multiarch:latest
+          ./scripts/tiny.sh
