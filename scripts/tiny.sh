@@ -159,7 +159,7 @@ java_native_image_work(){
   sed -i.bak -e 's/paketo-buildpacks\/upx:/dashaun\/upx:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   echo "********Building $BPID"
-  pack buildpack package gcr.io/dashaun/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
+  pack buildpack package gcr.io/dashaun/java-native-image:"${BPVER}" --pull-policy=never --config ./package-mod.toml
   cd ../../../
 }
 
