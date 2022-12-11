@@ -45,4 +45,7 @@ jobs:
 
       - name: tiny-builder
         run: |
+          #Cleanup
+          docker kill $(docker ps -q)
+          docker system prune -a --volumes -f
           ./scripts/tiny.sh

@@ -11,6 +11,10 @@ fi
 mkdir -p "$WORK"
 rm -rf "${WORK:?}/"*
 
+# A link for the renamed buildpacks
+mkdir -p "$WORK/paketo-buildpacks"
+ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
+
 wget -q https://raw.githubusercontent.com/paketo-buildpacks/tiny-builder/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
 JAVA_NATIVE_IMAGE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java-native-image:" | cut -d ':' -f 3 | cut -d '"' -f1)
 JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java:" | cut -d ':' -f 3 | cut -d '"' -f1)
@@ -80,12 +84,14 @@ java_work(){
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/-amd64.tar.gz/-aarch64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   # Syft
   TARGET=$WORK/paketo-buildpacks/syft/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/amd64.tar.gz/arm64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Watchexec
@@ -93,38 +99,67 @@ java_work(){
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/x86_64-unknown/aarch64-unknown/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Java Buildpack
   TARGET=$WORK/$BPID/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/java\"/id = \"dashaun\/java\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   build_local_buildpacks $BPID
+
   cd $WORK/$BPID
   printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
   cat ./package.toml >> ./package-mod.toml
-  pack buildpack package gcr.io/$BPID:"${BPVER}" --pull-policy=never --config ./package-mod.toml
+
+  #package.toml
+  TARGET=./package-mod.toml
+  sed -i.bak -e 's/paketo-buildpacks\/bellsoft-liberica:/dashaun\/bellsoft-liberica:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/paketo-buildpacks\/syft:/dashaun\/syft:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/paketo-buildpacks\/watchexec:/dashaun\/watchexec:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+
+  echo "********Building $BPID from $PWD"
+  pack buildpack package gcr.io/dashaun/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
   cd ../../../
 }
 
 java_native_image_work(){
-  #Java Native Image Buildpack
-  TARGET=$WORK/$BPID/buildpack.toml
-  cp "${TARGET}" "${TARGET}.orig"
-  sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
-
   #UPX
   TARGET=$WORK/paketo-buildpacks/upx/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/amd64/arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/upx\"/id = \"dashaun\/upx\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
+
+  #Java Native Image Buildpack
+  TARGET=$WORK/$BPID/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
+  sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/java-native-image\"/id = \"dashaun\/java-native-image\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/upx\"/id = \"dashaun\/upx\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   build_local_buildpacks $BPID
   cd $WORK/$BPID
   printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
   cat ./package.toml >> ./package-mod.toml
-  pack buildpack package gcr.io/$BPID:"${BPVER}" --pull-policy=never --config ./package-mod.toml
+
+  #package.toml
+  TARGET=./package-mod.toml
+  sed -i.bak -e 's/paketo-buildpacks\/bellsoft-liberica:/dashaun\/bellsoft-liberica:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/paketo-buildpacks\/syft:/dashaun\/syft:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/paketo-buildpacks\/watchexec:/dashaun\/watchexec:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/paketo-buildpacks\/upx:/dashaun\/upx:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+
+  echo "********Building $BPID"
+  pack buildpack package gcr.io/dashaun/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
   cd ../../../
 }
 
@@ -142,6 +177,9 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat ./stack/mystack.toml >> "${TARGET}"
+#Update tiny builder
+sed -i.bak -e 's/paketo-buildpacks\/java-native-image/dashaun\/java-native-image/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+sed -i.bak -e 's/paketo-buildpacks\/java/dashaun\/java/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
 
 cd $WORK
@@ -152,6 +190,6 @@ docker push dashaun/builder-arm:tiny
 docker push dashaun/stack-build:tiny
 docker push dashaun/stack-run:tiny
 docker push dashaun/builder-arm:tiny
-#
+
 docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder:tiny
