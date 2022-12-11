@@ -24,10 +24,11 @@ GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" |
 docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
 docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 
-docker build ./stack -t dashaun/stack-build:tiny --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
+docker build ./stack -t dashaun/stack-build:tiny --target build --build-arg STACK_ID="dashaun.stacks.tiny"
 docker push dashaun/stack-build:tiny
 
-docker build ./stack -t dashaun/stack-run:tiny --target run --build-arg STACK_ID="io.paketo.stacks.tiny"
+docker build ./stack -t dashaun/stack-run:tiny --target run --build-arg STACK_ID="dashaun.stacks.tiny"
+docker push dashaun/stack-run:tiny
 
 
 clone_buildpack (){
@@ -186,9 +187,6 @@ cd $WORK
 pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
 cd ..
 
-docker push dashaun/builder-arm:tiny
-docker push dashaun/stack-build:tiny
-docker push dashaun/stack-run:tiny
 docker push dashaun/builder-arm:tiny
 
 docker pull paketobuildpacks/builder:tiny
