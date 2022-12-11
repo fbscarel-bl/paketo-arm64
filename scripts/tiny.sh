@@ -191,5 +191,7 @@ docker push dashaun/stack-build:tiny
 docker push dashaun/stack-run:tiny
 docker push dashaun/builder-arm:tiny
 
+docker rmi paketobuildpacks/builder:tiny
+docker pull paketobuildpacks/builder:tiny
 docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder:tiny
