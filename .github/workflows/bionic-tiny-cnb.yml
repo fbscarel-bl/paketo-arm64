@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: 'paketo-buildpacks/jam'
+          repository: 'dashaun/jam-arm64'
           path: 'jam'
           ref: 'main'
 
@@ -55,3 +55,4 @@ jobs:
         run: |
           cd jam
           ./scripts/package.sh --version 0.0.1
+          cd ..
