@@ -26,13 +26,6 @@ GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" |
 docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
 docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 
-docker build ./stack -t dashaun/stack-build:tiny --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
-docker push dashaun/stack-build:tiny
-
-docker build ./stack -t dashaun/stack-run:tiny --target run --build-arg STACK_ID="io.paketo.stacks.tiny"
-docker push dashaun/stack-run:tiny
-
-
 clone_buildpack (){
   BPID="$1"
   BPVER="$2"
