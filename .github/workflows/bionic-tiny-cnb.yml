@@ -18,11 +18,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: 'paketo-buildpacks/bionic-tiny-stack'
+          ref: 'main'
 
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: 'paketobuildpacks/jam'
+          repository: 'paketo-buildpacks/jam'
           path: 'jam'
           ref: 'main'
 
