@@ -54,4 +54,4 @@ jobs:
       - name: package-jam
         run: |
           cd jam
-          ./scripts/package.sh
+          ./scripts/package.sh 0.0.1
