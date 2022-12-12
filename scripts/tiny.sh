@@ -24,13 +24,6 @@ GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" |
 docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
 docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 
-docker build ./stack -t dashaun/stack-build:tiny --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
-docker push dashaun/stack-build:tiny
-
-docker build ./stack -t dashaun/stack-run:tiny --target run --build-arg STACK_ID="io.paketo.stacks.tiny"
-docker push dashaun/stack-run:tiny
-
-
 clone_buildpack (){
   BPID="$1"
   BPVER="$2"
@@ -69,12 +62,12 @@ update_metadata_dependencies() {
       #printf %s\n $i
       #grab the sha256
       SHA256_REPLACE=$(printf %s "$i" | jq -r .sha256)
-      printf "SHA256_REPLACE %s\n" "$SHA256_REPLACE"
+      #printf "SHA256_REPLACE %s\n" "$SHA256_REPLACE"
       URI_RESOURCE=$(printf %s "$i" | jq -r .uri)
-      printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
+      #printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
       wget -q "$URI_RESOURCE" --output-document=$WORK/downloaded.tgz >/dev/null 2>&1 &&
       SHA256_NEW=$(shasum -a 256 $WORK/downloaded.tgz | cut -d ' ' -f 1)
-      printf "SHA256_NEW %s\n" "$SHA256_NEW"
+      #printf "SHA256_NEW %s\n" "$SHA256_NEW"
       sed -i.bak -e "s/$SHA256_REPLACE/$SHA256_NEW/" -- "${TARGET}" && rm -- "${TARGET}.bak"
     done
 }
@@ -177,7 +170,7 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
-cat ./stack/mystack.toml >> "${TARGET}"
+cat ./stack/jammy/jammy-stack.toml >> "${TARGET}"
 #Update tiny builder
 #sed -i.bak -e 's/paketo-buildpacks\/java-native-image/dashaun\/java-native-image/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 #sed -i.bak -e 's/paketo-buildpacks\/java/dashaun\/java/' -- "${TARGET}" && rm -- "${TARGET}.bak"
