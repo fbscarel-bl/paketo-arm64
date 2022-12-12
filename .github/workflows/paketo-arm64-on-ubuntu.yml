@@ -1,4 +1,4 @@
-name: arm64-buildpack
+name: arm64-buildpack-from-amd64
 
 on:
   workflow_dispatch:
