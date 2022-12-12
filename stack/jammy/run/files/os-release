@@ -1,0 +1,4 @@
+PRETTY_NAME="ARM64 Jammy Tiny"
+HOME_URL="https://github.com/dashaun/paketo-arm64"
+SUPPORT_URL="https://github.com/dashaun/paketo-arm64"
+BUG_REPORT_URL="https://github.com/dashaun/paketo-arm64/issues/new"
