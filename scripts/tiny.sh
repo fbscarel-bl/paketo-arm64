@@ -21,6 +21,8 @@ JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java
 PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
 GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
 
+docker pull dashaun/jammy-build:tiny
+docker pull dashaun/jammy-run:tiny
 docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
 docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 
