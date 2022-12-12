@@ -23,7 +23,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: 'paketobuildpacks/jam'
-          path: jam
+          path: 'jam'
+          ref: 'main'
 
         
       - name: Login to DockerHub
