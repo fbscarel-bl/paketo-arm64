@@ -3,6 +3,9 @@ FROM ubuntu:jammy
 ARG sources
 ARG packages
 ARG package_args='--allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends'
+ENV CNB_USER_ID=1000
+ENV CNB_GROUP_ID=1000
+ENV CNB_STACK_ID=io.paketo.stacks.tiny
 LABEL io.buildpacks.stack.id=io.paketo.stacks.tiny
 
 RUN echo "$sources" > /etc/apt/sources.list
