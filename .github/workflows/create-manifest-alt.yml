@@ -1,4 +1,4 @@
-name: create-manifest
+name: create-manifest-alt
 
 on:
   workflow_dispatch:
