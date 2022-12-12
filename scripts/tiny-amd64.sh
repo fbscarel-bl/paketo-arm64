@@ -3,6 +3,8 @@ set -eo pipefail
 
 WORK="./buildpacks"
 
+export GOARCH="arm64"
+
 if [ -z "$WORK" ]; then
 	echo "WORK cannot be empty"
 	exit 254
@@ -59,7 +61,7 @@ build_local_buildpacks() {
   	pushd "$WORK/$BUILDPACK" >/dev/null
   		create-package --destination ./out --version "$VERSION"
   		pushd ./out >/dev/null
-  			GOARCH="arm64" pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
+  			pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
   		popd
   	popd
   done
