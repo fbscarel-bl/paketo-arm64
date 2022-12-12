@@ -189,5 +189,7 @@ cd ..
 
 docker push dashaun/builder-arm:tiny
 
+docker system prune -a --volumes -f
+
 docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder:tiny
