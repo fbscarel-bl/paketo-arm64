@@ -1,7 +1,7 @@
 name: arm64-buildpack-from-amd64
 
-on:
-  workflow_dispatch:
+#on:
+#  workflow_dispatch:
 #  push:
 #    branches:
 #      - main

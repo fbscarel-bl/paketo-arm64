@@ -1,6 +1,6 @@
 # Paketo Buildpacks Multi-Architecture Builder
 
-[![create-manifest](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml)
+[![dashaun/builder](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml)
 
 This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
