@@ -9,10 +9,9 @@ ENV CNB_STACK_ID=io.paketo.stacks.tiny
 LABEL io.buildpacks.stack.id=io.paketo.stacks.tiny
 
 RUN groupadd cnb --gid ${CNB_GROUP_ID} && \
-  useradd --uid ${CNB_USER_ID} --gid ${CNB_GROUP_ID} -m -s /bin/bash cnb \
-
-RUN echo "$sources" > /etc/apt/sources.list
-RUN echo "Package: $packages\nPin: release c=multiverse\nPin-Priority: -1\n\nPackage: $packages\nPin: release c=restricted\nPin-Priority: -1\n" > /etc/apt/preferences
+  useradd --uid ${CNB_USER_ID} --gid ${CNB_GROUP_ID} -m -s /bin/bash cnb && \
+  echo "$sources" > /etc/apt/sources.list && \
+  echo "Package: $packages\nPin: release c=multiverse\nPin-Priority: -1\n\nPackage: $packages\nPin: release c=restricted\nPin-Priority: -1\n" > /etc/apt/preferences
 
 RUN echo "debconf debconf/frontend select noninteractive" | debconf-set-selections && \
   export DEBIAN_FRONTEND=noninteractive && \
