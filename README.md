@@ -1,8 +1,8 @@
 # Paketo Buildpacks Multi-Architecture Builder
 
 This repo is used to generate:
-- `dashaun/builder-arm:tiny` a modified version of `paketobuildpacks/builder:tiny` that works with ARM64 like M1, M2, and Raspberry Pi
-- `dashaun/builder:tiny` a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
+- [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
+- [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
 
 ## Quick Start
 
@@ -48,15 +48,13 @@ Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 
 ## Goals of this repository
 
-- Deliver a buildpack that can be used for ARM64
+- Deliver a buildpack that can be used with `Spring Boot 3` and `GraalVM` on ARM64 architecture
 - Deliver a buildpack that can be used the same way on ARM64 and AMD64
 - Help deliver ARM64 and multi-architecture support upstream to [Paketo](https://paketo.io)
 
-Please use it and provide feedback!
+Please use it and provide feedback! Pull requests are welcome!
 
-Pull requests are welcome!
-
-## Details on the Automation Scripts
+## Automation Scripts
 
 1. [tiny.sh](https://github.com/dashaun/paketo-arm64/blob/main/scripts/tiny.sh) creates a multi-architecture version of [builder:tiny](https://github.com/paketo-buildpacks/tiny-builder) but uses `Ubuntu Jammy` instead of `Ubuntu Bionic`
 
