@@ -1,4 +1,4 @@
-name: arm64-buildpack
+name: dashaun/builder-arm
 
 on:
   workflow_dispatch:
