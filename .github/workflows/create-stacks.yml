@@ -1,4 +1,4 @@
-name: create arm64 stack
+name: dashaun/jammy
 
 on:
   workflow_dispatch:
