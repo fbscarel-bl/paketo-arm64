@@ -10,10 +10,6 @@ This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
 - [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
 
-## Issues & Support
-
-
-
 ## Quick Start
 
 Create a Spring Boot project:
