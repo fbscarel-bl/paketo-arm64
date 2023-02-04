@@ -1,3 +1,7 @@
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+
 # Paketo Buildpacks Multi-Architecture Builder
 
 [![dashaun/builder-arm](https://github.com/dashaun/paketo-arm64/actions/workflows/paketo-arm64.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/paketo-arm64.yml) | [![dashaun/builder](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml) | [![dashaun/jammy](https://github.com/dashaun/paketo-arm64/actions/workflows/create-stacks.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-stacks.yml)
@@ -5,6 +9,10 @@
 This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
 - [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
+
+## Issues & Support
+
+
 
 ## Quick Start
 
@@ -97,3 +105,12 @@ Please use it and provide feedback! Pull requests are welcome!
 
 - [Daniel Mikusa](https://twitter.com/dmikusa)
 - [Salman Malik](https://twitter.com/SalmanTheMalik)
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[forks-shield]: https://img.shields.io/github/forks/dashaun/paketo-arm64.svg?style=for-the-badge
+[forks-url]: https://github.com/dashaun/paketo-arm64/network/members
+[stars-shield]: https://img.shields.io/github/stars/dashaun/paketo-arm64.svg?style=for-the-badge
+[stars-url]: https://github.com/dashaun/paketo-arm64/stargazers
+[issues-shield]: https://img.shields.io/github/issues/dashaun/paketo-arm64.svg?style=for-the-badge
+[issues-url]: https://github.com/dashaun/paketo-arm64/issues
