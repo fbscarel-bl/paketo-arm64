@@ -10,7 +10,7 @@ This repo is used to generate:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.0 -d type=maven-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.2 -d type=maven-project | tar -xzf -
 ```
 
 In the pom.xml replace this:
@@ -46,6 +46,28 @@ with this:
 Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 ```bash
 ./mvnw -Pnative spring-boot:build-image
+```
+
+Test the image by running it with docker:
+```bash
+docker run --rm -d -p 8080:8080 demo:0.0.1-SNAPSHOT
+```
+
+Validate the image:
+```bash
+http :8080/actuator/health
+```
+```text
+HTTP/1.1 200 
+Connection: keep-alive
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Date: Sat, 04 Feb 2023 05:04:36 GMT
+Keep-Alive: timeout=60
+Transfer-Encoding: chunked
+
+{
+    "status": "UP"
+}
 ```
 
 ## Goals of this repository
