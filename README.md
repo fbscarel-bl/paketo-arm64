@@ -105,7 +105,7 @@ Please use it and provide feedback! Pull requests are welcome!
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [forks-shield]: https://img.shields.io/github/forks/dashaun/paketo-arm64.svg?style=for-the-badge
-[forks-url]: https://github.com/dashaun/paketo-arm64/network/members
+[forks-url]: https://github.com/dashaun/paketo-arm64/forks
 [stars-shield]: https://img.shields.io/github/stars/dashaun/paketo-arm64.svg?style=for-the-badge
 [stars-url]: https://github.com/dashaun/paketo-arm64/stargazers
 [issues-shield]: https://img.shields.io/github/issues/dashaun/paketo-arm64.svg?style=for-the-badge
