@@ -23,6 +23,8 @@ jobs:
           #Cleanup
           docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
           docker manifest push dashaun/builder:tiny
+          docker manifest create dashaun/builder:$(date +%Y%m%d) --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
+          docker manifest push dashaun/builder:$(date +%Y%m%d)
           docker manifest create dashaun/builder-multiarch:latest --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
           docker manifest push dashaun/builder-multiarch:latest
           docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-arm:tiny --amend paketobuildpacks/builder:tiny
