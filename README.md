@@ -10,7 +10,7 @@ This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
 - [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
 
-## Quick Start
+## Quick Start Maven
 
 Create a Spring Boot project:
 ```bash
@@ -51,6 +51,28 @@ Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 ```bash
 ./mvnw -Pnative spring-boot:build-image
 ```
+
+## Quick Start Gradle
+
+Create a Spring Boot project:
+```bash
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.2 -d type=gradle-project | tar -xzf -
+```
+
+In the build.gradle add this:
+```
+tasks.named("bootBuildImage") {
+    builder = "dashaun/builder:tiny"
+    environment = ["BP_NATIVE_IMAGE" : "true"]
+}
+```
+
+Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
+```bash
+./gradlew bootBuildImage
+```
+
+## Quick Start Validation
 
 Test the image by running it with docker:
 ```bash
