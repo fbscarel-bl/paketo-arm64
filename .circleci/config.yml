@@ -42,7 +42,7 @@ jobs:
           docker-password: DOCKERHUB_PASSWORD
       - run:
           name: "Run script/tiny.sh"
-          command: "./script/tiny.sh"
+          command: "./scripts/tiny.sh"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
