@@ -20,6 +20,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "what is in the directory"
+          command: "ls -latr"
+      - run:
           name: "Say hello"
           command: "echo Hello, Arm!"
       - run:
