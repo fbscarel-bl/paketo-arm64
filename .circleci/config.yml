@@ -3,6 +3,8 @@
 version: 2.1
 orbs:
   go: circleci/go@1.7.2
+  tools-install: ovotech/tools-install@1.0.161
+  
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
@@ -25,6 +27,12 @@ jobs:
       - run:
           name: "Install libpak::create-package"
           command: "go install github.com/paketo-buildpacks/libpak/cmd/create-package@v1.60.1"
+      - tools-install/do:
+          archive_url: 'https://github.com/buildpacks/pack/releases/download/v0.28.0/pack-v0.28.0-linux-arm64.tgz'
+          symlink_source: pack
+      - run:
+          name: "pack version"
+          command: "~/bin/pack version"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
