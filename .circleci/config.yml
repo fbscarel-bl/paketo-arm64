@@ -13,8 +13,6 @@ jobs:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     machine:
-      context:
-        - dashaun-dockerhub
       image: ubuntu-2004:current
       resource_class: arm.medium
     # Add steps to the job
@@ -39,10 +37,15 @@ jobs:
       - docker/check:
           docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
           docker-password: DOCKERHUB_PASSWORD
+      - run:
+          name: "Run script/tiny.sh"
+          command: "./script/tiny.sh"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
-      - say-hello
+      - say-hello:
+          context:
+            - dashaun-dockerhub
