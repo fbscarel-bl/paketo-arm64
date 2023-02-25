@@ -1,7 +1,8 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine.
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-
+orbs:
+  go: circleci/go@1.7.2
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
@@ -18,6 +19,12 @@ jobs:
       - run:
           name: "Say hello"
           command: "echo Hello, Arm!"
+      - run:
+          name: "Install yj"
+          command: "go install github.com/sclevine/yj/v5@v5.1.0"
+      - run:
+          name: "Install libpak::create-package"
+          command: "go install github.com/paketo-buildpacks/libpak/cmd/create-package@v1.60.1"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
