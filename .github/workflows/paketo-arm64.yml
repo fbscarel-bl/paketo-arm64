@@ -31,7 +31,7 @@ jobs:
           go install github.com/sclevine/yj/v5@v5.1.0
           go install github.com/paketo-buildpacks/libpak/cmd/create-package@v1.60.1
           
-      - name: Downlad pack-arm64
+      - name: Download pack-arm64
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: 'buildpacks/pack'
