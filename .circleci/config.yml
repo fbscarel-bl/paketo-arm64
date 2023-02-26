@@ -34,12 +34,37 @@ jobs:
       - run:
           name: "Run script/tiny.sh"
           command: "./scripts/tiny.sh"
-
+  create-stacks:
+    machine:
+      image: ubuntu-2004:current
+      resource_class: arm.medium
+    steps:
+      - checkout
+      - docker/check:
+          docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
+          docker-password: DOCKERHUB_PASSWORD
+      - docker/build:
+          dockerfile: ./stack/focal
+          tag: dashaun/stack-build:tiny
+          extra_build_args: --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
+      - docker/build:
+          dockerfile: ./stack/focal
+          tag: dashaun/stack-run:tiny
+          extra_build_args: --target run --build-arg STACK_ID="io.paketo.stacks.tiny" 
+      - docker/push:
+          image: dashaun/stack-build:tiny
+      - docker/push:
+          image: dashaun/stack-run:tiny
+          
+          
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   build-arm64-workflow:
     jobs:
       - build-arm64:
+          context:
+            - dashaun-dockerhub
+      - create-stacks:
           context:
             - dashaun-dockerhub
