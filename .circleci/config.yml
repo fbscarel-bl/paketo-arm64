@@ -34,7 +34,7 @@ jobs:
       - run:
           name: "Run script/tiny.sh"
           command: "./scripts/tiny.sh"
-  create-stacks:
+  create-focal-stack:
     machine:
       image: ubuntu-2004:current
       resource_class: arm.medium
@@ -59,7 +59,31 @@ jobs:
       - docker/push:
           image: dashaun/stack-run
           tag: tiny
-          
+  create-jammy-stack:
+    machine:
+      image: ubuntu-2004:current
+      resource_class: arm.medium
+    steps:
+      - checkout
+      - docker/check:
+          docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
+          docker-password: DOCKERHUB_PASSWORD
+      - docker/build:
+          dockerfile: stack/jammy/build/Dockerfile
+          image: dashaun/jammy-build
+          tag: tiny
+          extra_build_args: --build-arg sources="deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse \n deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse \n deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" --build-arg packages="build-essential ca-certificates curl git jq libgmp-dev libssl3 libyaml-0-2 netbase openssl tzdata xz-utils zlib1g-dev"
+      - docker/build:
+          dockerfile: stack/jammy/run/Dockerfile
+          image: dashaun/jammy-run
+          tag: tiny
+          extra_build_args: --build-arg packages="base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g"
+      - docker/push:
+          image: dashaun/jammy-build
+          tag: tiny
+      - docker/push:
+          image: dashaun/jammy-run
+          tag: tiny          
           
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -69,6 +93,9 @@ workflows:
       - build-arm64:
           context:
             - dashaun-dockerhub
-      - create-stacks:
+      - create-focal-stack:
+          context:
+            - dashaun-dockerhub
+      - create-jammy-stack:
           context:
             - dashaun-dockerhub
