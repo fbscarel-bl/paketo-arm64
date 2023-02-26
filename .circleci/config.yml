@@ -9,7 +9,7 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
+  build-arm64:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     machine:
@@ -20,12 +20,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "what is in the directory"
-          command: "ls -latr"
-      - run:
-          name: "Say hello"
-          command: "echo Hello, Arm!"
-      - run:
           name: "Install yj"
           command: "go install github.com/sclevine/yj/v5@v5.1.0"
       - run:
@@ -34,9 +28,6 @@ jobs:
       - tools-install/do:
           archive_url: 'https://github.com/buildpacks/pack/releases/download/v0.28.0/pack-v0.28.0-linux-arm64.tgz'
           symlink_source: pack
-      - run:
-          name: "pack version"
-          command: "~/bin/pack version"
       - docker/check:
           docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
           docker-password: DOCKERHUB_PASSWORD
@@ -47,8 +38,8 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  build-arm64-workflow:
     jobs:
-      - say-hello:
+      - build-arm64:
           context:
             - dashaun-dockerhub
