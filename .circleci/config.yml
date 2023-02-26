@@ -45,11 +45,13 @@ jobs:
           docker-password: DOCKERHUB_PASSWORD
       - docker/build:
           dockerfile: ./stack/focal
-          tag: dashaun/stack-build:tiny
+          image: dashaun/stack-build
+          tag: tiny
           extra_build_args: --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
       - docker/build:
           dockerfile: ./stack/focal
-          tag: dashaun/stack-run:tiny
+          image: dashaun/stack-run
+          tag: tiny
           extra_build_args: --target run --build-arg STACK_ID="io.paketo.stacks.tiny" 
       - docker/push:
           image: dashaun/stack-build:tiny
