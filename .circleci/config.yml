@@ -73,15 +73,15 @@ jobs:
           image: dashaun/jammy-run
           tag: tiny
           extra_build_args: >
-            --build-arg packages="base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g"
+            --build-arg packages='base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g'
       - docker/build:
           dockerfile: stack/jammy/build/Dockerfile
           image: dashaun/jammy-build
           tag: tiny
           extra_build_args: |
-            --build-arg sources="deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse
+            --build-arg sources='deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse
             deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse
-            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse"
+            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse'
             --build-arg packages="build-essential ca-certificates curl git jq libgmp-dev libssl3 libyaml-0-2 netbase openssl tzdata xz-utils zlib1g-dev"
       
       - docker/push:
