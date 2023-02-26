@@ -44,12 +44,12 @@ jobs:
           docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
           docker-password: DOCKERHUB_PASSWORD
       - docker/build:
-          dockerfile: stack/focal
+          dockerfile: stack/focal/Dockerfile
           image: dashaun/stack-build
           tag: tiny
           extra_build_args: --target build --build-arg STACK_ID="io.paketo.stacks.tiny"
       - docker/build:
-          dockerfile: stack/focal
+          dockerfile: stack/focal/Dockerfile
           image: dashaun/stack-run
           tag: tiny
           extra_build_args: --target run --build-arg STACK_ID=io.paketo.stacks.tiny
