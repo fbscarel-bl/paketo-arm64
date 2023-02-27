@@ -5,7 +5,7 @@ ARG packages
 RUN apt-get update && \
   apt-get install -y xz-utils binutils zstd
 
-ADD install-certs.sh .
+ADD ./install-certs.sh .
 
 ADD files/passwd /tiny/etc/passwd
 ADD files/nsswitch.conf /tiny/etc/nsswitch.conf
