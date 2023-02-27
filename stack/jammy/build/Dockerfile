@@ -1,7 +1,7 @@
 FROM ubuntu:jammy
 
-ARG sources
-ARG packages
+ARG sources='deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse \n deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse \n deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse'
+ARG packages='base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g'
 ARG package_args='--allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends'
 ENV CNB_USER_ID=1000
 ENV CNB_GROUP_ID=1000
