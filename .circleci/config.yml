@@ -72,8 +72,7 @@ jobs:
           dockerfile: stack/jammy/run/Dockerfile
           image: dashaun/jammy-run
           tag: tiny
-          extra_build_args: |
-            --build-arg packages=\"base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g\"
+          extra_build_args: --build-arg packages=\"base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g\"
       - docker/build:
           dockerfile: stack/jammy/build/Dockerfile
           image: dashaun/jammy-build
