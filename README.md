@@ -111,9 +111,9 @@ Please use it and provide feedback! Pull requests are welcome!
 
 (more builders coming)
 
-## GitHub Action Workflow
+## GitHub Action Workflow & CirleCI Workflow
 
-[ARM64 Self Hosted GitHub Action Runner](https://github.com/dashaun/tf-oci-arm) - Terraform to configure ARM64 VM in Oracle Cloud
+I'm no longer using self-hosted infrastructure!  ARM64 workflows now use CircleCI!
 
 ## See Also
 
