@@ -69,11 +69,13 @@ jobs:
           docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
           docker-password: DOCKERHUB_PASSWORD
       - docker/build:
+          docker-context: stack/jammy/run
           dockerfile: stack/jammy/run/Dockerfile
           image: dashaun/jammy-run
           tag: tiny
           extra_build_args: --build-arg packages=\"base-files,ca-certificates,libc6,libssl3,netbase,openssl,tzdata,zlib1g\"
       - docker/build:
+          docker-context: stack/jammy/build
           dockerfile: stack/jammy/build/Dockerfile
           image: dashaun/jammy-build
           tag: tiny
