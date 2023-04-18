@@ -8,7 +8,7 @@
  [![dashaun/builder](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml) 
 
 This repo is used to generate:
-- [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, and Raspberry Pi
+- [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, Raspberry Pi, and Rock Pi
 - [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
 
 ## Quick Start Maven
