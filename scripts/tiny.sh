@@ -38,7 +38,7 @@ clone_buildpack (){
     BUILDPACK=$(echo "$GROUP" | jq -r ".id")
     VERSION=$(echo "$GROUP" | jq -r ".version")
     if [ ! -d "$WORK/$BUILDPACK" ]; then
-      git clone -q "https://github.com/$BUILDPACK" "$WORK/$BUILDPACK" >/dev/null 2>&1 &&
+      git clone -q --filter=tree:0 "https://github.com/$BUILDPACK" "$WORK/$BUILDPACK" >/dev/null 2>&1 &&
       pushd "$WORK/$BUILDPACK" >/dev/null
       git -c "advice.detachedHead=false" checkout "v$VERSION"
       popd
@@ -51,10 +51,18 @@ build_local_buildpacks() {
   	BUILDPACK=$(echo "$GROUP" | jq -r ".id")
   	VERSION=$(echo "$GROUP" | jq -r ".version")
   	pushd "$WORK/$BUILDPACK" >/dev/null
-  		create-package --destination ./out --version "$VERSION"
-  		pushd ./out >/dev/null
-  			pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
-  		popd
+      if [ "$BUILDPACK" != "paketo-buildpacks/yarn" ] && [ "$BUILDPACK" != "paketo-buildpacks/node-engine" ]; then
+        echo "Building $BUILDPACK:$VERSION"
+        create-package --destination ./out --version "$VERSION"
+        echo "Created package for $BUILDPACK:$VERSION"
+        pushd ./out >/dev/null
+          pack buildpack package "gcr.io/$BUILDPACK:$VERSION"
+        popd
+      else
+        echo "Building $BUILDPACK:$VERSION with alternate script"
+        ./scripts/package.sh --version "$VERSION"
+        pack buildpack package "gcr.io/$BUILDPACK:$VERSION" --path ./build/buildpack.tgz
+      fi
   	popd
   done
 }
@@ -80,14 +88,12 @@ java_work(){
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/-amd64.tar.gz/-aarch64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   # Syft
   TARGET=$WORK/paketo-buildpacks/syft/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/amd64.tar.gz/arm64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Watchexec
@@ -95,33 +101,22 @@ java_work(){
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/x86_64-unknown/aarch64-unknown/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
   #Java Buildpack
   TARGET=$WORK/$BPID/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/java\"/id = \"dashaun\/java\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   build_local_buildpacks $BPID
 
-  cd $WORK/$BPID
-  printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
-  cat ./package.toml >> ./package-mod.toml
-
-  #package.toml
-  #TARGET=./package-mod.toml
-  #sed -i.bak -e 's/paketo-buildpacks\/bellsoft-liberica:/dashaun\/bellsoft-liberica:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/paketo-buildpacks\/syft:/dashaun\/syft:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/paketo-buildpacks\/watchexec:/dashaun\/watchexec:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-
-  echo "********Building $BPID from $PWD"
-  pack buildpack package gcr.io/paketo-buildpacks/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
-  cd ../../../
+  #cd $WORK/$BPID
+  pushd "$WORK/$BPID" >/dev/null
+    printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
+    cat ./package.toml >> ./package-mod.toml 
+    echo "********Building $BPID from $PWD"
+    pack buildpack package gcr.io/paketo-buildpacks/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
+  popd
 }
 
 java_native_image_work(){
@@ -136,27 +131,14 @@ java_native_image_work(){
   TARGET=$WORK/$BPID/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/java-native-image\"/id = \"dashaun\/java-native-image\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/upx\"/id = \"dashaun\/upx\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/bellsoft-liberica\"/id = \"dashaun\/bellsoft-liberica\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/syft\"/id = \"dashaun\/syft\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/id = \"paketo-buildpacks\/watchexec\"/id = \"dashaun\/watchexec\"/' -- "${TARGET}" && rm -- "${TARGET}.bak"
 
   build_local_buildpacks $BPID
-  cd $WORK/$BPID
-  printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
-  cat ./package.toml >> ./package-mod.toml
-
-  #package.toml
-  #TARGET=./package-mod.toml
-  #sed -i.bak -e 's/paketo-buildpacks\/bellsoft-liberica:/dashaun\/bellsoft-liberica:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/paketo-buildpacks\/syft:/dashaun\/syft:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/paketo-buildpacks\/watchexec:/dashaun\/watchexec:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-  #sed -i.bak -e 's/paketo-buildpacks\/upx:/dashaun\/upx:/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-
-  echo "********Building $BPID"
-  pack buildpack package gcr.io/paketo-buildpacks/java-native-image:"${BPVER}" --pull-policy=never --config ./package-mod.toml
-  cd ../../../
+  pushd "$WORK/$BPID" >/dev/null
+    printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
+    cat ./package.toml >> ./package-mod.toml
+    echo "********Building $BPID"
+    pack buildpack package gcr.io/paketo-buildpacks/java-native-image:"${BPVER}" --pull-policy=never --config ./package-mod.toml
+  popd
 }
 
 clone_buildpack paketo-buildpacks/java "$JAVA_VER"
@@ -172,14 +154,10 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
-cat ./stack/jammy/jammy-stack.toml >> "${TARGET}"
-#Update tiny builder
-#sed -i.bak -e 's/paketo-buildpacks\/java-native-image/dashaun\/java-native-image/' -- "${TARGET}" && rm -- "${TARGET}.bak"
-#sed -i.bak -e 's/paketo-buildpacks\/java/dashaun\/java/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+cat "${PWD}"/stack/jammy/jammy-stack.toml >> "${TARGET}"
 
-
-cd $WORK
-pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
-cd ..
+pushd $WORK
+  pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
+popd
 
 docker push dashaun/builder-arm:tiny
