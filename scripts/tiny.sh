@@ -63,7 +63,7 @@ build_local_buildpacks() {
         sed -i.bak -e 's/2.1.0/2.1.1/' -- "./scripts/.util/tools.json" && rm -- "./scripts/.util/tools.json.bak"
         # shellcheck disable=SC2016
         sed -i.bak -e 's/jam-${os}/jam-${os}-arm64/' -- "./scripts/.util/tools.sh" && rm -- "./scripts/.util/tools.sh.bak"
-        sed -i.bak -e 's/pack-${version}-${os}.tgz/pack-${version}-${os}-arm64.tgz' -- "./scripts/.util/tools.sh" && rm -- "./scripts/.util/tools.sh.bak"
+        sed -i.bak -e 's/pack-${version}-${os}/pack-${version}-${os}-arm64/' -- "./scripts/.util/tools.sh" && rm -- "./scripts/.util/tools.sh.bak"
         ./scripts/package.sh --version "$VERSION"
         pack buildpack package "gcr.io/$BUILDPACK:$VERSION" --path ./build/buildpack.tgz
       fi
