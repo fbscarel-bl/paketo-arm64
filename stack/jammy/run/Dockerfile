@@ -1,6 +1,6 @@
 FROM ubuntu:jammy AS builder
 
-ARG packages='base-files ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g'
+ARG packages='base-files build-essential ca-certificates libc6 libssl3 netbase openssl tzdata zlib1g'
 
 RUN apt-get update && \
   apt-get install -y xz-utils binutils zstd
