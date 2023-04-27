@@ -4,8 +4,7 @@
 
 # Paketo Buildpacks Multi-Architecture Builder
 
-[![dashaun/builder-arm](https://circleci.com/gh/dashaun/paketo-arm64.svg?style=shield)](https://app.circleci.com/pipelines/github/dashaun/paketo-arm64) |
- [![dashaun/builder](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml/badge.svg)](https://github.com/dashaun/paketo-arm64/actions/workflows/create-manifest.yml) 
+[![dashaun/builder-arm](https://circleci.com/gh/dashaun/paketo-arm64.svg?style=shield)](https://app.circleci.com/pipelines/github/dashaun/paketo-arm64)
 
 This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, Raspberry Pi, and Rock Pi
