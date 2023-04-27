@@ -33,57 +33,7 @@ jobs:
           docker-password: DOCKERHUB_PASSWORD
       - run:
           name: "Run script/tiny.sh"
-          command: "./scripts/tiny.sh"
-  create-focal-stack:
-    machine:
-      image: ubuntu-2004:current
-      resource_class: arm.medium
-    steps:
-      - checkout
-      - docker/check:
-          docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
-          docker-password: DOCKERHUB_PASSWORD
-      - docker/build:
-          dockerfile: stack/focal/Dockerfile
-          image: dashaun/stack-build
-          tag: tiny
-          extra_build_args: --target build --build-arg STACK_ID=io.paketo.stacks.tiny
-      - docker/build:
-          dockerfile: stack/focal/Dockerfile
-          image: dashaun/stack-run
-          tag: tiny
-          extra_build_args: --target run --build-arg STACK_ID=io.paketo.stacks.tiny
-      - docker/push:
-          image: dashaun/stack-build
-          tag: tiny
-      - docker/push:
-          image: dashaun/stack-run
-          tag: tiny
-  create-jammy-stack:
-    machine:
-      image: ubuntu-2004:current
-      resource_class: arm.medium
-    steps:
-      - checkout
-      - docker/check:
-          docker-username: DOCKER_LOGIN  # DOCKER_LOGIN is the default value, if it exists, it automatically would be used.
-          docker-password: DOCKERHUB_PASSWORD
-      - docker/build:
-          docker-context: stack/jammy/run
-          dockerfile: stack/jammy/run/Dockerfile
-          image: dashaun/jammy-run
-          tag: tiny
-      - docker/build:
-          docker-context: stack/jammy/build
-          dockerfile: stack/jammy/build/Dockerfile
-          image: dashaun/jammy-build
-          tag: tiny
-      - docker/push:
-          image: dashaun/jammy-build
-          tag: tiny
-      - docker/push:
-          image: dashaun/jammy-run
-          tag: tiny          
+          command: "./scripts/tiny.sh"        
           
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -91,11 +41,5 @@ workflows:
   build-arm64-workflow:
     jobs:
       - build-arm64:
-          context:
-            - dashaun-dockerhub
-      - create-focal-stack:
-          context:
-            - dashaun-dockerhub
-      - create-jammy-stack:
           context:
             - dashaun-dockerhub
