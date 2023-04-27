@@ -21,8 +21,10 @@ JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java
 PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
 GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
 
-docker pull dashaun/jammy-build:tiny
-docker pull dashaun/jammy-run:tiny
+#docker pull dashaun/jammy-build:tiny\
+docker pull dmikusa/build-jammy-tiny:0.0.2
+#docker pull dashaun/jammy-run:tiny
+docker pull dmikusa/run-jammy-tiny:0.0.2
 docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
 docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 
@@ -158,7 +160,7 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
-cat "${PWD}"/stack/jammy/jammy-stack.toml >> "${TARGET}"
+cat "${PWD}"/stack/mystack.toml >> "${TARGET}"
 
 pushd $WORK
   pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
