@@ -15,7 +15,7 @@ This repo is used to generate:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.2 -d type=maven-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.6 -d type=maven-project | tar -xzf -
 ```
 
 In the pom.xml replace this:
@@ -57,7 +57,7 @@ Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.2 -d type=gradle-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.6 -d type=gradle-project | tar -xzf -
 ```
 
 In the build.gradle add this:
@@ -88,7 +88,7 @@ http :8080/actuator/health
 HTTP/1.1 200 
 Connection: keep-alive
 Content-Type: application/vnd.spring-boot.actuator.v3+json
-Date: Sat, 04 Feb 2023 05:04:36 GMT
+Date: Sat, 27 Apr 2023 05:04:36 GMT
 Keep-Alive: timeout=60
 Transfer-Encoding: chunked
 
@@ -107,7 +107,9 @@ Please use it and provide feedback! Pull requests are welcome!
 
 ## Automation Scripts
 
-1. [tiny.sh](https://github.com/dashaun/paketo-arm64/blob/main/scripts/tiny.sh) creates a multi-architecture version of [builder:tiny](https://github.com/paketo-buildpacks/tiny-builder) but uses `Ubuntu Jammy` instead of `Ubuntu Bionic`
+1. [tiny.sh](https://github.com/dashaun/paketo-arm64/blob/main/scripts/tiny.sh) creates a multi-architecture version of [builder:tiny](https://github.com/paketo-buildpacks/tiny-builder) but:
+- uses a multi-architecture `stack` from [Daniel Mikusa](https://github.com/dmikusa)
+- used `Ubuntu Jammy` instead of `Ubuntu Bionic` for versions before 20230427
 
 (more builders coming)
 
