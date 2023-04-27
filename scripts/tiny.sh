@@ -163,7 +163,18 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/mystack.toml >> "${TARGET}"
 
 pushd $WORK
-  pack builder create dashaun/builder-arm:tiny -c ./builder.toml --pull-policy never
+  pack builder create dashaun/builder-arm:$(date +%Y%m%d) -c ./builder.toml --pull-policy never
 popd
 
-docker push dashaun/builder-arm:tiny
+docker push dashaun/builder-arm:$(date +%Y%m%d)
+
+docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder:tiny
+docker manifest create dashaun/builder:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder:$(date +%Y%m%d)
+docker manifest create dashaun/builder-multiarch:latest --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder-multiarch:latest
+docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder-multiarch:tiny
+docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest push dashaun/builder-multiarch:$(date +%Y%m%d)
