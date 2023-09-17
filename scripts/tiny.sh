@@ -8,23 +8,25 @@ if [ -z "$WORK" ]; then
 	exit 254
 fi
 
-mkdir -p "$WORK"
-rm -rf "${WORK:?}/"*
+init () {
+  mkdir -p "$WORK"
+  rm -rf "${WORK:?}/"*
 
-# A link for the renamed buildpacks
-mkdir -p "$WORK/paketo-buildpacks"
-ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
+  # A link for the renamed buildpacks
+  mkdir -p "$WORK/paketo-buildpacks"
+  ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
 
-wget -q https://raw.githubusercontent.com/paketo-buildpacks/tiny-builder/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
-JAVA_NATIVE_IMAGE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java-native-image:" | cut -d ':' -f 3 | cut -d '"' -f1)
-JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java:" | cut -d ':' -f 3 | cut -d '"' -f1)
-PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
-GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
+  wget -q https://raw.githubusercontent.com/paketo-buildpacks/tiny-builder/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
+  JAVA_NATIVE_IMAGE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java-native-image:" | cut -d ':' -f 3 | cut -d '"' -f1)
+  JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java:" | cut -d ':' -f 3 | cut -d '"' -f1)
+  PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
+  GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
 
-docker pull dmikusa/build-jammy-tiny:0.0.2
-docker pull dmikusa/run-jammy-tiny:0.0.2
-docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
-docker pull gcr.io/paketo-buildpacks/go:$GO_VER
+  docker pull dmikusa/build-jammy-tiny:0.0.2
+  docker pull dmikusa/run-jammy-tiny:0.0.2
+  docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
+  docker pull gcr.io/paketo-buildpacks/go:$GO_VER
+}
 
 clone_buildpack (){
   BPID="$1"
@@ -47,6 +49,7 @@ clone_buildpack (){
 }
 
 build_local_buildpacks() {
+  echo "***** Building Local Buildpacks"
   for GROUP in $(yj -t < "$WORK/$BPID/buildpack.toml" | jq -rc '.order[].group[]'); do
   	BUILDPACK=$(echo "$GROUP" | jq -r ".id")
   	VERSION=$(echo "$GROUP" | jq -r ".version")
@@ -60,10 +63,6 @@ build_local_buildpacks() {
         popd
       else
         echo "Building $BUILDPACK:$VERSION with alternate script"
-        sed -i.bak -e 's/2.1.0/2.1.1/' -- "./scripts/.util/tools.json" && rm -- "./scripts/.util/tools.json.bak"
-        # shellcheck disable=SC2016
-        sed -i.bak -e 's/jam-${os}/jam-${os}-arm64/' -- "./scripts/.util/tools.sh" && rm -- "./scripts/.util/tools.sh.bak"
-        sed -i.bak -e 's/pack-${version}-${os}/pack-${version}-${os}-arm64/' -- "./scripts/.util/tools.sh" && rm -- "./scripts/.util/tools.sh.bak"
         ./scripts/package.sh --version "$VERSION"
         pack buildpack package "gcr.io/$BUILDPACK:$VERSION" --path ./build/buildpack.tgz
       fi
@@ -72,6 +71,7 @@ build_local_buildpacks() {
 }
 
 update_metadata_dependencies() {
+    echo "**** update_metadata_dependencies"
     printf "%s" "$1" | jq -c '.metadata.dependencies[]' | while read -r i; do
       #printf %s\n $i
       #grab the sha256
@@ -79,11 +79,13 @@ update_metadata_dependencies() {
       #printf "SHA256_REPLACE %s\n" "$SHA256_REPLACE"
       URI_RESOURCE=$(printf %s "$i" | jq -r .uri)
       #printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
+      echo "---> downloading $URI_RESOURCE"
       wget -q "$URI_RESOURCE" --output-document=$WORK/downloaded.tgz >/dev/null 2>&1 &&
       SHA256_NEW=$(shasum -a 256 $WORK/downloaded.tgz | cut -d ' ' -f 1)
       #printf "SHA256_NEW %s\n" "$SHA256_NEW"
       sed -i.bak -e "s/$SHA256_REPLACE/$SHA256_NEW/" -- "${TARGET}" && rm -- "${TARGET}.bak"
     done
+    echo "**** done"
 }
 
 java_work(){
@@ -116,7 +118,7 @@ java_work(){
 
   #cd $WORK/$BPID
   pushd "$WORK/$BPID" >/dev/null
-    printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
+    printf "[buildpack]\n  uri = \".\"\n" > ./package-mod.toml
     cat ./package.toml >> ./package-mod.toml 
     echo "********Building $BPID from $PWD"
     pack buildpack package gcr.io/paketo-buildpacks/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
@@ -138,12 +140,14 @@ java_native_image_work(){
 
   build_local_buildpacks $BPID
   pushd "$WORK/$BPID" >/dev/null
-    printf "[buildpack]\n  uri = \".\"" > ./package-mod.toml
+    printf "[buildpack]\n  uri = \".\"\n" > ./package-mod.toml
     cat ./package.toml >> ./package-mod.toml
     echo "********Building $BPID"
     pack buildpack package gcr.io/paketo-buildpacks/java-native-image:"${BPVER}" --pull-policy=never --config ./package-mod.toml
   popd
 }
+
+init
 
 clone_buildpack paketo-buildpacks/java "$JAVA_VER"
 java_work
