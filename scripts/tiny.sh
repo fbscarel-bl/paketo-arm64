@@ -24,6 +24,8 @@ init () {
 
   docker pull dmikusa/build-jammy-tiny:0.0.2
   docker pull dmikusa/run-jammy-tiny:0.0.2
+  docker pull dmikusa/build-jammy-base:0.0.2
+  docker pull dmikusa/run-jammy-base:0.0.2
   docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
   docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 }
@@ -155,6 +157,8 @@ java_work
 clone_buildpack paketo-buildpacks/java-native-image "$JAVA_NATIVE_IMAGE_VER"
 java_native_image_work
 
+cp $WORK/builder.toml $WORK/base-builder.toml
+
 #Tiny Builder
 TARGET=$WORK/builder.toml
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
@@ -164,8 +168,18 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/mystack.toml >> "${TARGET}"
 
+##Base Builder
+TARGET=$WORK/base-builder.toml
+sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
+sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
+sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
+sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
+sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
+cat "${PWD}"/stack/jammy-base-stack.toml >> "${TARGET}"
+
 pushd $WORK
   pack builder create dashaun/builder-arm:$(date +%Y%m%d) -c ./builder.toml --pull-policy never
+  pack builder create dashaun/base-builder-arm:$(date +%Y%m%d) -c ./base-builder.toml --pull-policy never
 popd
 
 docker push dashaun/builder-arm:$(date +%Y%m%d)
@@ -180,3 +194,6 @@ docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-ar
 docker manifest push dashaun/builder-multiarch:tiny
 docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder-multiarch:$(date +%Y%m%d)
+
+docker manifest create dashaun/builder:base --amend dashaun/base-builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:base
+docker manifest push dashaun/builder:base
