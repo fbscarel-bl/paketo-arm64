@@ -183,6 +183,7 @@ pushd $WORK
 popd
 
 docker push dashaun/builder-arm:$(date +%Y%m%d)
+docker push dashaun/base-builder-arm:$(date +%Y%m%d)
 
 docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
 docker manifest push dashaun/builder:tiny
