@@ -16,16 +16,18 @@ init () {
   mkdir -p "$WORK/paketo-buildpacks"
   ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
 
-  wget -q https://raw.githubusercontent.com/paketo-buildpacks/tiny-builder/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
+  wget -q https://raw.githubusercontent.com/paketo-buildpacks/builder-jammy-tiny/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
+
   JAVA_NATIVE_IMAGE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java-native-image:" | cut -d ':' -f 3 | cut -d '"' -f1)
   JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java:" | cut -d ':' -f 3 | cut -d '"' -f1)
   PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
   GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
 
-  docker pull dmikusa/build-jammy-tiny:0.0.2
-  docker pull dmikusa/run-jammy-tiny:0.0.2
-  docker pull dmikusa/build-jammy-base:0.0.2
-  docker pull dmikusa/run-jammy-base:0.0.2
+  docker pull paketobuildpacks/build-jammy-tiny:0.2.3
+  docker pull paketobuildpacks/run-jammy-tiny:latest
+  docker pull paketobuildpacks/build-jammy-base:0.1.76
+  docker pull paketobuildpacks/run-jammy-base:latest
+
   docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
   docker pull gcr.io/paketo-buildpacks/go:$GO_VER
 }
@@ -82,7 +84,7 @@ update_metadata_dependencies() {
       URI_RESOURCE=$(printf %s "$i" | jq -r .uri)
       #printf "URI_RESOURCE %s\n" "$URI_RESOURCE"
       echo "---> downloading $URI_RESOURCE"
-      wget -q "$URI_RESOURCE" --output-document=$WORK/downloaded.tgz >/dev/null 2>&1 &&
+      wget -q --show-progress "$URI_RESOURCE" --output-document=$WORK/downloaded.tgz >/dev/null 2>&1 &&
       SHA256_NEW=$(shasum -a 256 $WORK/downloaded.tgz | cut -d ' ' -f 1)
       #printf "SHA256_NEW %s\n" "$SHA256_NEW"
       sed -i.bak -e "s/$SHA256_REPLACE/$SHA256_NEW/" -- "${TARGET}" && rm -- "${TARGET}.bak"
@@ -157,16 +159,17 @@ java_work
 clone_buildpack paketo-buildpacks/java-native-image "$JAVA_NATIVE_IMAGE_VER"
 java_native_image_work
 
+cp $WORK/builder.toml $WORK/tiny-builder.toml
 cp $WORK/builder.toml $WORK/base-builder.toml
 
 #Tiny Builder
-TARGET=$WORK/builder.toml
+TARGET=$WORK/tiny-builder.toml
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
-cat "${PWD}"/stack/mystack.toml >> "${TARGET}"
+cat "${PWD}"/stack/jammy-tiny-stack.toml >> "${TARGET}"
 
 ##Base Builder
 TARGET=$WORK/base-builder.toml
@@ -178,7 +181,7 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/jammy-base-stack.toml >> "${TARGET}"
 
 pushd $WORK
-  pack builder create dashaun/builder-arm:$(date +%Y%m%d) -c ./builder.toml --pull-policy never
+  pack builder create dashaun/builder-arm:$(date +%Y%m%d) -c ./tiny-builder.toml --pull-policy never
   pack builder create dashaun/base-builder-arm:$(date +%Y%m%d) -c ./base-builder.toml --pull-policy never
 popd
 

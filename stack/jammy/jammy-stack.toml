@@ -1,4 +1,0 @@
-[stack]
-  build-image = "docker.io/dashaun/jammy-build:tiny"
-  id = "io.paketo.stacks.tiny"
-  run-image = "docker.io/dashaun/jammy-run:tiny"
