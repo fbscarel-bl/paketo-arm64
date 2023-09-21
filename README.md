@@ -8,13 +8,15 @@
 
 This repo is used to generate:
 - [dashaun/builder-arm](https://hub.docker.com/r/dashaun/builder-arm) a modified version of `paketobuildpacks/builder` that works with ARM64 architectures like M1, M2, Raspberry Pi, and Rock Pi
-- [dashaun/builder](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
+- [dashaun/builder:tiny](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:tiny` for ARM64 and `paketobuildpacks/builder:tiny` for AMD64
+- [dashaun/builder:base](https://hub.docker.com/r/dashaun/builder) a manifest delivering `dashaun/builder-arm:base` for ARM64 and `paketobuildpacks/builder:base` for AMD64
+>The dashaun/builder-arm:base just changes the stack, it does not include the all of the 'base' buildpacks
 
 ## Quick Start Maven
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.1.2 -d type=maven-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.1.3 -d type=maven-project | tar -xzf -
 ```
 
 In the pom.xml replace this:
@@ -56,7 +58,7 @@ Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.0.6 -d type=gradle-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.1.3 -d type=gradle-project | tar -xzf -
 ```
 
 In the build.gradle add this:
@@ -103,14 +105,6 @@ Transfer-Encoding: chunked
 - Help deliver ARM64 and multi-architecture support upstream to [Paketo](https://paketo.io)
 
 Please use it and provide feedback! Pull requests are welcome!
-
-## Automation Scripts
-
-1. [tiny.sh](https://github.com/dashaun/paketo-arm64/blob/main/scripts/tiny.sh) creates a multi-architecture version of [builder:tiny](https://github.com/paketo-buildpacks/tiny-builder) but:
-- uses a multi-architecture `stack` from [Daniel Mikusa](https://github.com/dmikusa)
-- used `Ubuntu Jammy` instead of `Ubuntu Bionic` for versions before 20230427
-
-(more builders coming)
 
 ## GitHub Action Workflow & CirleCI Workflow
 
