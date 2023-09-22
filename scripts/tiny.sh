@@ -25,8 +25,8 @@ init () {
 
   docker pull paketobuildpacks/build-jammy-tiny:0.2.3
   docker pull paketobuildpacks/run-jammy-tiny:latest
-  docker pull paketobuildpacks/build-jammy-base:0.1.76
-  docker pull paketobuildpacks/run-jammy-base:latest
+  docker pull dmikusa/build-jammy-base:0.0.2
+  docker pull dmikusa/run-jammy-base:0.0.2
 
   docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
   docker pull gcr.io/paketo-buildpacks/go:$GO_VER
