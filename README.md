@@ -16,7 +16,7 @@ This repo is used to generate:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.1.3 -d type=maven-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=21 -d bootVersion=3.1.4 -d type=maven-project | tar -xzf -
 ```
 
 In the pom.xml replace this:
@@ -58,7 +58,7 @@ Create OCI images just like you would with `paketobuildpacks/builder:tiny`:
 
 Create a Spring Boot project:
 ```bash
-curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=17 -d bootVersion=3.1.3 -d type=gradle-project | tar -xzf -
+curl https://start.spring.io/starter.tgz -d dependencies=web,actuator,native -d javaVersion=21 -d bootVersion=3.1.4 -d type=gradle-project | tar -xzf -
 ```
 
 In the build.gradle add this:
