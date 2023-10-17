@@ -2,8 +2,8 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 orbs:
-  docker: circleci/docker@2.2.0
-  go: circleci/go@1.7.2
+  docker: circleci/docker@2.4.0
+  go: circleci/go@1.9.0
   tools-install: ovotech/tools-install@1.0.161
   
 # Define a job to be invoked later in a workflow.
