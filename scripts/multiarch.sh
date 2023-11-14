@@ -3,35 +3,52 @@ set -eo pipefail
 
 WORK="./buildpacks"
 
+# Exit if WORK is empty
 if [ -z "$WORK" ]; then
-	echo "WORK cannot be empty"
-	exit 254
+    echo "WORK cannot be empty"
+    exit 254
 fi
 
-init () {
-  mkdir -p "$WORK"
-  rm -rf "${WORK:?}/"*
+# Function to initialize directories and download files
+init() {
+    mkdir -p "$WORK"
+    rm -rf "${WORK:?}/"*
 
-  # A link for the renamed buildpacks
-  mkdir -p "$WORK/paketo-buildpacks"
-  ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
+    mkdir -p "$WORK/paketo-buildpacks"
+    ln -s "${PWD}/${WORK}/paketo-buildpacks" "${PWD}/${WORK}/dashaun"
 
-  wget -q https://raw.githubusercontent.com/paketo-buildpacks/builder-jammy-tiny/main/builder.toml -O $WORK/builder.toml >/dev/null 2>&1 &&
+    download_file "https://raw.githubusercontent.com/paketo-buildpacks/builder-jammy-buildpackless-tiny/main/builder.toml" "$WORK/builder.toml"
 
-  JAVA_NATIVE_IMAGE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java-native-image:" | cut -d ':' -f 3 | cut -d '"' -f1)
-  JAVA_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/java:" | cut -d ':' -f 3 | cut -d '"' -f1)
-  PROCFILE_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/procfile:" | cut -d ':' -f 3 | cut -d '"' -f1)
-  GO_VER=$(cat $WORK/builder.toml | grep "docker://gcr.io/paketo-buildpacks/go:" | cut -d ':' -f 3 | cut -d '"' -f1)
+    JAVA_NATIVE_IMAGE_VER=$(extract_version "java-native-image")
+    JAVA_VER=$(extract_version "java")
+    PROCFILE_VER=$(extract_version "procfile")
+    GO_VER=$(extract_version "go")
 
-  docker pull paketobuildpacks/build-jammy-tiny:latest
-  docker pull paketobuildpacks/run-jammy-tiny:latest
-  docker pull dmikusa/build-jammy-base:0.0.2
-  docker pull dmikusa/run-jammy-base:0.0.2
-
-  docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
-  docker pull gcr.io/paketo-buildpacks/go:$GO_VER
+    pull_docker_images
 }
 
+# Function to download a file quietly
+download_file() {
+    wget -q "$1" -O "$2" >/dev/null 2>&1
+}
+
+# Function to extract version from builder.toml
+extract_version() {
+    grep "docker://gcr.io/paketo-buildpacks/$1:" "$WORK/builder.toml" | cut -d ':' -f 3 | cut -d '"' -f1
+}
+
+# Function to pull necessary Docker images
+pull_docker_images() {
+    docker pull paketobuildpacks/build-jammy-tiny:0.2.3
+    docker pull paketobuildpacks/run-jammy-tiny:latest
+    docker pull dmikusa/build-jammy-base:0.0.2
+    docker pull dmikusa/run-jammy-base:0.0.2
+
+    docker pull gcr.io/paketo-buildpacks/procfile:$PROCFILE_VER
+    docker pull gcr.io/paketo-buildpacks/go:$GO_VER
+}
+
+# Function to clone and checkout a buildpack
 clone_buildpack (){
   BPID="$1"
   BPVER="$2"
@@ -52,6 +69,7 @@ clone_buildpack (){
   done
 }
 
+# Function to build local buildpacks
 build_local_buildpacks() {
   echo "***** Building Local Buildpacks"
   for GROUP in $(yj -t < "$WORK/$BPID/buildpack.toml" | jq -rc '.order[].group[]'); do
@@ -74,6 +92,7 @@ build_local_buildpacks() {
   done
 }
 
+# Function to update metadata dependencies
 update_metadata_dependencies() {
     echo "**** update_metadata_dependencies"
     printf "%s" "$1" | jq -c '.metadata.dependencies[]' | while read -r i; do
@@ -92,6 +111,7 @@ update_metadata_dependencies() {
     echo "**** done"
 }
 
+# Functions for specific buildpacks work
 java_work(){
   # Bellsoft Liberica
   TARGET=$WORK/paketo-buildpacks/bellsoft-liberica/buildpack.toml
@@ -151,11 +171,10 @@ java_native_image_work(){
   popd
 }
 
+# Main script execution
 init
-
 clone_buildpack paketo-buildpacks/java "$JAVA_VER"
 java_work
-
 clone_buildpack paketo-buildpacks/java-native-image "$JAVA_NATIVE_IMAGE_VER"
 java_native_image_work
 
@@ -200,4 +219,4 @@ docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun
 docker manifest push dashaun/builder-multiarch:$(date +%Y%m%d)
 
 docker manifest create dashaun/builder:base --amend dashaun/base-builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:base
-docker manifest push dashaun/builder:base
+docker manifest push dashaun/builder:base# ... (rest of the script remains the same)
