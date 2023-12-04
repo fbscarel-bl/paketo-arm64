@@ -188,16 +188,16 @@ popd
 docker push dashaun/builder-arm:$(date +%Y%m%d)
 docker push dashaun/base-builder-arm:$(date +%Y%m%d)
 
-docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
 docker manifest push dashaun/builder:tiny
-docker manifest create dashaun/builder:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest create dashaun/builder:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
 docker manifest push dashaun/builder:$(date +%Y%m%d)
-docker manifest create dashaun/builder-multiarch:latest --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest create dashaun/builder-multiarch:latest --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
 docker manifest push dashaun/builder-multiarch:latest
-docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
 docker manifest push dashaun/builder-multiarch:tiny
-docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:tiny
+docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
 docker manifest push dashaun/builder-multiarch:$(date +%Y%m%d)
 
-docker manifest create dashaun/builder:base --amend dashaun/base-builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder:base
+docker manifest create dashaun/builder:base --amend dashaun/base-builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-base:latest
 docker manifest push dashaun/builder:base
