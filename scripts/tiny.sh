@@ -207,22 +207,6 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/jammy-base-stack.toml >> "${TARGET}"
 
-for kind in tiny base; do
-  cat << EOF >> ${WORK}/${kind}-builder.toml
-
-[[buildpacks]]
-  uri = "docker://gcr.io/paketo-buildpacks/new-relic:${NEW_RELIC_VERSION}"
-  version = "${NEW_RELIC_VERSION}"
-
-[[order]]
-
-  [[order.group]]
-    id = "paketo-buildpacks/new-relic"
-    optional = true
-    version = "${NEW_RELIC_VERSION}"
-EOF
-done
-
 pushd $WORK
   pack builder create ${REPO}/builder-arm:${TAG} -c ./tiny-builder.toml --pull-policy never
   pack builder create ${REPO}/base-builder-arm:${TAG} -c ./base-builder.toml --pull-policy never
