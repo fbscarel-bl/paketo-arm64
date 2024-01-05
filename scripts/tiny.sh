@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -euxo pipefail
 
 WORK="./buildpacks"
 
@@ -39,6 +39,22 @@ clone_buildpack (){
   pushd "$WORK/$BPID" >/dev/null
   git -c "advice.detachedHead=false" checkout "v$BPVER"
   popd
+
+  if [ ${1} == "paketo-buildpacks/java" ]; then
+    cat << EOF >> $WORK/paketo-buildpacks/java/buildpack.toml
+
+  [[order.group]]
+    id = "paketo-buildpacks/new-relic"
+    optional = true
+    version = "8.6.0"
+EOF
+
+    cat << EOF >> $WORK/paketo-buildpacks/java/package.toml
+
+[[dependencies]]
+  uri = "docker://gcr.io/paketo-buildpacks/new-relic:8.6.0"
+EOF
+  fi
 
   for GROUP in $(yj -t < "$WORK/$BPID/buildpack.toml" | jq -rc '.order[].group[]'); do
     BUILDPACK=$(echo "$GROUP" | jq -r ".id")
@@ -106,14 +122,21 @@ java_work(){
   sed -i.bak -e 's/amd64.tar.gz/arm64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
-  #Watchexec
+  # Watchexec
   TARGET=$WORK/paketo-buildpacks/watchexec/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   sed -i.bak -e 's/x86_64-unknown/aarch64-unknown/' -- "${TARGET}" && rm -- "${TARGET}.bak"
   update_metadata_dependencies "$(yj -t < ${TARGET})"
 
-  #Java Buildpack
+  # New Relic
+  TARGET=$WORK/paketo-buildpacks/new-relic/buildpack.toml
+  cp "${TARGET}" "${TARGET}.orig"
+  sed -i.bak -e 's/arch=amd64/arch=arm64/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  sed -i.bak -e 's/_amd64.tar.gz/_arm64.tar.gz/' -- "${TARGET}" && rm -- "${TARGET}.bak"
+  update_metadata_dependencies "$(yj -t < ${TARGET})"
+
+  # Java Buildpack
   TARGET=$WORK/$BPID/buildpack.toml
   cp "${TARGET}" "${TARGET}.orig"
   sed -i.bak -e "s/{{.version}}/$BPVER/" -- "${TARGET}" && rm -- "${TARGET}.bak"
@@ -180,24 +203,27 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/jammy-base-stack.toml >> "${TARGET}"
 
+tag="$(date +"%Y_%m_%d_%H_%M_%S")"
+repo="fbscarelbl"
+
 pushd $WORK
-  pack builder create dashaun/builder-arm:$(date +%Y%m%d) -c ./tiny-builder.toml --pull-policy never
-  pack builder create dashaun/base-builder-arm:$(date +%Y%m%d) -c ./base-builder.toml --pull-policy never
+  pack builder create ${repo}/builder-arm:${tag} -c ./tiny-builder.toml --pull-policy never
+  pack builder create ${repo}/base-builder-arm:${tag} -c ./base-builder.toml --pull-policy never
 popd
 
-docker push dashaun/builder-arm:$(date +%Y%m%d)
-docker push dashaun/base-builder-arm:$(date +%Y%m%d)
+docker push ${repo}/builder-arm:${tag}
+docker push ${repo}/base-builder-arm:${tag}
 
-docker manifest create dashaun/builder:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push dashaun/builder:tiny
-docker manifest create dashaun/builder:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push dashaun/builder:$(date +%Y%m%d)
-docker manifest create dashaun/builder-multiarch:latest --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push dashaun/builder-multiarch:latest
-docker manifest create dashaun/builder-multiarch:tiny --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push dashaun/builder-multiarch:tiny
-docker manifest create dashaun/builder-multiarch:$(date +%Y%m%d) --amend dashaun/builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push dashaun/builder-multiarch:$(date +%Y%m%d)
+docker manifest create ${repo}/builder:tiny --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${repo}/builder:tiny
+docker manifest create ${repo}/builder:${tag} --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${repo}/builder:${tag}
+docker manifest create ${repo}/builder-multiarch:latest --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${repo}/builder-multiarch:latest
+docker manifest create ${repo}/builder-multiarch:tiny --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${repo}/builder-multiarch:tiny
+docker manifest create ${repo}/builder-multiarch:${tag} --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${repo}/builder-multiarch:${tag}
 
-docker manifest create dashaun/builder:base --amend dashaun/base-builder-arm:$(date +%Y%m%d) --amend paketobuildpacks/builder-jammy-base:latest
-docker manifest push dashaun/builder:base
+docker manifest create ${repo}/builder:base --amend ${repo}/base-builder-arm:${tag} --amend paketobuildpacks/builder-jammy-base:latest
+docker manifest push ${repo}/builder:base
