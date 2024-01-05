@@ -1,11 +1,15 @@
 #!/bin/bash
 set -euxo pipefail
 
+NEW_RELIC_VERSION="8.6.0"
+REPO="fbscarelbl"
+TAG="$(date +"%Y_%m_%d_%H_%M_%S")"
 WORK="./buildpacks"
 
+
 if [ -z "$WORK" ]; then
-	echo "WORK cannot be empty"
-	exit 254
+  echo "WORK cannot be empty"
+  exit 254
 fi
 
 init () {
@@ -46,13 +50,13 @@ clone_buildpack (){
   [[order.group]]
     id = "paketo-buildpacks/new-relic"
     optional = true
-    version = "8.6.0"
+    version = "${NEW_RELIC_VERSION}"
 EOF
 
     cat << EOF >> $WORK/paketo-buildpacks/java/package.toml
 
 [[dependencies]]
-  uri = "docker://gcr.io/paketo-buildpacks/new-relic:8.6.0"
+  uri = "docker://gcr.io/paketo-buildpacks/new-relic:${NEW_RELIC_VERSION}"
 EOF
   fi
 
@@ -71,9 +75,9 @@ EOF
 build_local_buildpacks() {
   echo "***** Building Local Buildpacks"
   for GROUP in $(yj -t < "$WORK/$BPID/buildpack.toml" | jq -rc '.order[].group[]'); do
-  	BUILDPACK=$(echo "$GROUP" | jq -r ".id")
-  	VERSION=$(echo "$GROUP" | jq -r ".version")
-  	pushd "$WORK/$BUILDPACK" >/dev/null
+        BUILDPACK=$(echo "$GROUP" | jq -r ".id")
+        VERSION=$(echo "$GROUP" | jq -r ".version")
+        pushd "$WORK/$BUILDPACK" >/dev/null
       if [ "$BUILDPACK" != "paketo-buildpacks/yarn" ] && [ "$BUILDPACK" != "paketo-buildpacks/node-engine" ]; then
         echo "Building $BUILDPACK:$VERSION"
         create-package --destination ./out --version "$VERSION"
@@ -86,7 +90,7 @@ build_local_buildpacks() {
         ./scripts/package.sh --version "$VERSION"
         pack buildpack package "gcr.io/$BUILDPACK:$VERSION" --path ./build/buildpack.tgz
       fi
-  	popd
+        popd
   done
 }
 
@@ -146,7 +150,7 @@ java_work(){
   #cd $WORK/$BPID
   pushd "$WORK/$BPID" >/dev/null
     printf "[buildpack]\n  uri = \".\"\n" > ./package-mod.toml
-    cat ./package.toml >> ./package-mod.toml 
+    cat ./package.toml >> ./package-mod.toml
     echo "********Building $BPID from $PWD"
     pack buildpack package gcr.io/paketo-buildpacks/java:"${BPVER}" --pull-policy=never --config ./package-mod.toml
   popd
@@ -203,27 +207,40 @@ sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 sed -i.bak -e '$d' -- "${TARGET}" && rm -- "${TARGET}.bak"
 cat "${PWD}"/stack/jammy-base-stack.toml >> "${TARGET}"
 
-tag="$(date +"%Y_%m_%d_%H_%M_%S")"
-repo="fbscarelbl"
+for kind in tiny base; do
+  cat << EOF >> ${WORK}/${kind}-builder.toml
+
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/new-relic:${NEW_RELIC_VERSION}"
+  version = "${NEW_RELIC_VERSION}"
+
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/new-relic"
+    optional = true
+    version = "${NEW_RELIC_VERSION}"
+EOF
+done
 
 pushd $WORK
-  pack builder create ${repo}/builder-arm:${tag} -c ./tiny-builder.toml --pull-policy never
-  pack builder create ${repo}/base-builder-arm:${tag} -c ./base-builder.toml --pull-policy never
+  pack builder create ${REPO}/builder-arm:${TAG} -c ./tiny-builder.toml --pull-policy never
+  pack builder create ${REPO}/base-builder-arm:${TAG} -c ./base-builder.toml --pull-policy never
 popd
 
-docker push ${repo}/builder-arm:${tag}
-docker push ${repo}/base-builder-arm:${tag}
+docker push ${REPO}/builder-arm:${TAG}
+docker push ${REPO}/base-builder-arm:${TAG}
 
-docker manifest create ${repo}/builder:tiny --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push ${repo}/builder:tiny
-docker manifest create ${repo}/builder:${tag} --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push ${repo}/builder:${tag}
-docker manifest create ${repo}/builder-multiarch:latest --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push ${repo}/builder-multiarch:latest
-docker manifest create ${repo}/builder-multiarch:tiny --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push ${repo}/builder-multiarch:tiny
-docker manifest create ${repo}/builder-multiarch:${tag} --amend ${repo}/builder-arm:${tag} --amend paketobuildpacks/builder-jammy-tiny:latest
-docker manifest push ${repo}/builder-multiarch:${tag}
+docker manifest create ${REPO}/builder:tiny --amend ${REPO}/builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${REPO}/builder:tiny
+docker manifest create ${REPO}/builder:${TAG} --amend ${REPO}/builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${REPO}/builder:${TAG}
+docker manifest create ${REPO}/builder-multiarch:latest --amend ${REPO}/builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${REPO}/builder-multiarch:latest
+docker manifest create ${REPO}/builder-multiarch:tiny --amend ${REPO}/builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${REPO}/builder-multiarch:tiny
+docker manifest create ${REPO}/builder-multiarch:${TAG} --amend ${REPO}/builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-tiny:latest
+docker manifest push ${REPO}/builder-multiarch:${TAG}
 
-docker manifest create ${repo}/builder:base --amend ${repo}/base-builder-arm:${tag} --amend paketobuildpacks/builder-jammy-base:latest
-docker manifest push ${repo}/builder:base
+docker manifest create ${REPO}/builder:base --amend ${REPO}/base-builder-arm:${TAG} --amend paketobuildpacks/builder-jammy-base:latest
+docker manifest push ${REPO}/builder:base
